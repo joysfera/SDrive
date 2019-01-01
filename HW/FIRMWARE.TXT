@@ -1,0 +1,19 @@
+----------------------------------------
+SDrive by Bob!k & Raster, C.P.U.
+Firmware
+----------------------------------------
+
+Firmware is programmed in PonnyProg2000.
+
+Configuration fuses: FUSES.GIF
+
+Program memory (FLASH) file: SDrive.hex
+Data memory (EEPROM) file: SDrive.eep
+(Make sure you have both files loaded
+in PonnyProg before MCU programming!)
+
+Warning:
+Be sure you haven't inserted any SD card
+in SD slot during MCU programming!
+
+----------------------------------------

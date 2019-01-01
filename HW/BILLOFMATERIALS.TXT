@@ -1,0 +1,30 @@
+---------------------------------------------------
+SDrive by Bob!k & Raster, C.P.U.
+Bill of materials
+---------------------------------------------------
+
+C1,C2 ......... 2 ... 22pF
+C3,C4 ......... 2 ... 100nF
+C5 ............ 1 ... 10uF tantal
+C6 ............ 1 ... 1uF
+C7,C8,C9,C10 .. 4 ... 22nF
+D1,D2,D3,D4 ... 4 ... LED Yellow (2mA)
+D5 ............ 1 ... LED Green (2mA)
+D6 ............ 1 ... LED Red (2mA)
+D7 ............ 1 ... diode 1N4148
+P1 ............ 1 ... DSUB15F (female)
+P2 ............ 1 ... SD card slot
+P3 ............ 1 ... programming slot (6 pins)
+R1,R2,R3 ...... 3 ... 1K8
+R4 ............ 1 ... 47K
+RN1 ........... 1 ... LC9001 resistor network 1K5
+RN2 ........... 1 ... LC5001 resistor network 3K3
+SW1,SW2,SW3,SW8 4 ... TM095 microswitch
+SW4,SW5,SW6,SW7 1 ... SDIP04 dipswitch (4 segments)
+                3 ... DIL08 standard socket
+U1 ............ 1 ... ATmega8-16PU
+                1 ... DIL28 narrow precise socket
+U2 ............ 1 ... LE33CZ
+X1 ............ 1 ... quartz 14.31818 MHz
+
+---------------------------------------------------

@@ -2,7 +2,7 @@
 
 **SDrive by C.P.U.** (2008-2009) , Robert Petružela (Bob!k) & Radek Štěrba (Raster)
 
-![SDrive](sdrive1.jpg)
+![SDrive](photos/sdrive1.jpg)
 
 **SDrive** (rev.12.10.2008) (control program v01 20090403)
 
@@ -30,7 +30,7 @@ The SDrive is a device that connects to Atari XL/XE's serial (SIO) port and simu
 *   Built-in bootloader requiring less than 256 bytes including sector buffer, relocatable in the $0500-$05F7 to $BE00-$BEF7 range, with SKCTL initialization before every block. Supports executable files of up to 8MB size.
 *   Directory with filename simulated for active files in drives, data handled through standard 128B sectors. Executable files can be run from most DOSes or Q-MEG. Random data files with arbitrary suffix can be activated and opened by a program through DOS or copied to disk images. (Note: 80KB file size limit applies to standard DOSes, 8MB to Q-MEG and MyDOS)
 
-![SDrive](SDRIVE3.JPG)
+![SDrive](photos/sdrive3.jpg)
 
 ### How it works:
 
@@ -40,7 +40,7 @@ System drive number is derived from SDrive ID number, so for SDrive #1 - #4 ther
 
 Note: While booting the SDRIVE.ATR you can choose between loading the SDRIVE.COM control program (default), SDRIVEN.COM („NoAutoload“ version), SDRIVENH.COM („NoAutoload“ + built-in help), DOS II+ or S/XEGS RAMcart feeder of control program (SDRIVENH.COM) by holding Atari Shift and pressing keys 1 to 5.
 
-![SDRIVE.COM](SDRIVE2.JPG)
+![SDRIVE.COM](photos/sdrive2.jpg)
 
 **Disk image file with Atari control program (place it to root directory of SD card):**
 
@@ -55,16 +55,5 @@ Note: While booting the SDRIVE.ATR you can choose between loading the SDRIVE.COM
 
 *   [SDrive_changes.txt](SDrive_changes.txt)
 *   [SDrive20090403.zip](SDrive20090403.zip) (DOCS, HW, SW, SRC) (0.5 MB)
-*   [SDrive20090403photos.zip](ftp://ftp.raster.infos.cz/raster/atari/sdrive/SDrive20090403photos.zip) (PHOTOS) (27 MB)
 
-[![SCHEME.PDF](SCHEME.GIF)](SCHEME.PDF)
-
-**Demo videos** **(AVI, DivX):**
-
-*   [Executable files](ftp://ftp.raster.infos.cz/raster/atari/sdrive/1_xex.avi) (9MB)
-*   [Disk image files](ftp://ftp.raster.infos.cz/raster/atari/sdrive/2_images.avi) (5MB)
-*   [More executable files in drives](ftp://ftp.raster.infos.cz/raster/atari/sdrive/3_more_xex.avi) (10MB)
-*   [File info and view](ftp://ftp.raster.infos.cz/raster/atari/sdrive/4_file_info_view.avi) (6MB)
-*   [Copy files to disk images](ftp://ftp.raster.infos.cz/raster/atari/sdrive/5_copy_files_to_images.avi) (10MB)
-*   [Drive swapping](ftp://ftp.raster.infos.cz/raster/atari/sdrive/6_drive_swapping.avi) (43MB)
-*   [Delayed write](ftp://ftp.raster.infos.cz/raster/atari/sdrive/7_read_and_delayed_write.avi) (10MB)
+[![SCHEME.PDF](SCHEME.GIF)](HW/SCHEME.PDF)
