@@ -46,6 +46,8 @@
 #include "mmcconf.h"
 
 
+extern unsigned char mmc_sector_buffer[512];
+
 void mmcInit(void)
 {
 	// initialize SPI interface
@@ -57,16 +59,17 @@ void mmcInit(void)
 
 extern u32 n_actual_mmc_sector;
 extern u08 n_actual_mmc_sector_needswrite;
+u08 SDHC;
 
 u08 mmcReset(void)
 {
 	u16 retry;
 	u08 r1;
 	u08 i;
-	u08 sdcard;
 
 	n_actual_mmc_sector=0xFFFFFFFF;	//!!! pridano dovnitr
 	n_actual_mmc_sector_needswrite=0;
+	SDHC=0;
 
 	//
 	i=0xff; //255x
@@ -76,21 +79,87 @@ u08 mmcReset(void)
 	r1 = mmcSendCommand(MMC_GO_IDLE_STATE, 0);
 	if (r1!=1) return -1;
 
+
+//	tady by mela byt asi dana smycka, ale mame malo mista ve flash, tak verime, ze jednou staci (popr. rucne reset)
+//	retry=0xffff; //65535x
+//	do
+	{
+		//r1 = mmcSendCommand(MMC_SEND_IF_COND, 0x1aa);	// nastav 2.7-3.6V + 0xAA echo pattern
+//set_display(0);
+		//r1 = mmcCommandToBufferResponse(MMC_SEND_IF_COND, 0x1aa, 4);
+		
+		mmcCommandToBufferResponse(MMC_SEND_IF_COND, 0x1aa, 4);
+
+/*
+		if (r1==0)			//spravne vraci karta 1! protoze je stale v init rezimu 120911
+		{
+set_display(3);
+				SendToUART();
+			// nasledujici odpoved ignorujeme. pokud se s nama karta nebude chtit bavit, 
+			//tak se nebude a vysledek je na stejno => nepouzitelna karta (karta se tim chrani pri spatnem rozsahu)
+
+			// kvuli mistu pocitame s tim, ze se tyto 4 byty doctou az pripadne na zacatku dalsiho mmcSendCommand
+			spiTransferFF();	// dohromady 5bytu, prvni je precten uz v mmcSendCommand
+			spiTransferFF();	// voltage
+			spiTransferFF();	// echo back pattern
+			spiTransferFF();	//crc
+
+//				break;
+		}
+*/
+//		retry--;
+	}
+//	while(retry);
+
+//set_display(4);
+
+//	mmcSendCommand(MMC_CRC_ON_OFF, 0);
+
 	retry=0xffff; //65535x
 	do
 	{
 		r1 = mmcSendCommand(55, 0);
-		if (r1!=1) break; //MMC
+		if (r1!=1) break; //MMC			//  120911 opravdu ma vracet 1, kdyz vsechno ok
 		//if (r1==5) break; //MMC  <--- kontrolovat takhle rekl Bob 27.6.2008
 								//Strana 120 ve specifikaci.
 								//bit 0 - in idle state, bit 2 - illegal command
 
-		r1 = mmcSendCommand(41, 0);
-		if (r1==0) break; //SD
+		r1 = mmcSendCommand(41, (0x40000000));	// umime i SDHC/SDXC
+		if (r1==0)	// 120911 dokud neni r1 nulove, tak znovu cely init (CMD55 i CMD41)
+		{
+
+//		set_display(1);
+
+			//r1 = mmcSendCommand(58, (0x40000000));	// kontrola, zda karta je/neni SDHC/SDXC (potreba kvuli
+													// adresaci bytu/sektoru u MMC_READ_SINGLE_BLOCK a MMC_WRITE_SINGLE_BLOCK
+			//r1 = mmcSendCommand(9, (0x0));	// kontrola, zda karta je/neni SDHC/SDXC (potreba kvuli
+
+
+			r1 = mmcCommandToBufferResponse(58,0,5);
+
+			if(r1 == 0)	// if command succeeded
+			{
+				if((mmc_sector_buffer[1]&0xC0)==0xC0)
+					SDHC = 1;
+				else
+					SDHC = 0;
+			}
+			else
+			{
+				return -1; //unknown;
+			}
+
+		 	break; //SD/SDHC
+		 }
+//		 else
+//		 {
+//		 	Delay1000us();
+//		 }
 
 		retry--;
 	}
 	while(retry);
+
 
 	// initializing card for operation
 	r1 = mmcSendCommand(MMC_SEND_OP_COND, 0);
@@ -145,8 +214,6 @@ u08 mmcSendCommand(u08 cmd, u32 arg)
 	return r1;
 }
 
-extern unsigned char mmc_sector_buffer[512];
-
 u08 mmcRead(u32 sector)
 {
 	u08 r1;
@@ -156,7 +223,7 @@ u08 mmcRead(u32 sector)
 	// assert chip select
 	cbi(MMC_CS_PORT,MMC_CS_PIN);
 	// issue command
-	r1 = mmcCommand(MMC_READ_SINGLE_BLOCK, sector<<9);
+	r1 = mmcCommand(MMC_READ_SINGLE_BLOCK, (SDHC)?sector:(sector<<9));
 
 	// check for valid response
 	if(r1 != 0x00) return r1;
@@ -192,7 +259,7 @@ u08 mmcWrite(u32 sector)
 	// assert chip select
 	cbi(MMC_CS_PORT,MMC_CS_PIN);
 	// issue command
-	r1 = mmcCommand(MMC_WRITE_BLOCK, sector<<9);
+	r1 = mmcCommand(MMC_WRITE_BLOCK, (SDHC)?sector:(sector<<9));
 	// check for valid response
 	if(r1 != 0x00)
 		return r1;
@@ -242,7 +309,11 @@ u08 mmcCommand(u08 cmd, u32 arg)
 	spiTransferByte(arg);
 	//Alternativni zpusob pres ((u08*)&arg)[] je delsi.
 
-	spiTransferByte(0x95);	// crc valid only for MMC_GO_IDLE_STATE
+	if(cmd==MMC_GO_IDLE_STATE)
+		spiTransferByte(0x95);	// crc valid only for MMC_GO_IDLE_STATE
+	else
+		spiTransferByte(0x86); // crc valid for MMC_SEND_IF_COND
+
 	// end command
 	// wait for response
 	// if more than 255 retries, card has timed-out
@@ -252,8 +323,33 @@ u08 mmcCommand(u08 cmd, u32 arg)
 		r1 = spiTransferFF();
 		retry--;
 	}
-	while(retry && (r1 == 0xFF) );
+	//while(retry && (r1 == 0xFF) );
+	while(retry && (r1 & 0x80) );	// valid answer to command has 7bit null => must be less 0x80
 
 	// return response
 	return r1;
+}
+
+u08 mmcCommandToBufferResponse(u08 cmd, u32 arg, u08 len)
+{
+	u08 r1;
+	u16 i;
+	u08 *buffer=mmc_sector_buffer;	//natvrdo!
+
+	// assert chip select
+	cbi(MMC_CS_PORT,MMC_CS_PIN);
+	// issue command
+	r1 = mmcCommand(cmd, arg);
+
+	*buffer++ = r1;
+
+	//nacti 'len' bytu
+	i=len; //0x200;	//512
+	do { *buffer++ = spiTransferFF(); i--; } while(i);
+
+	// release chip select
+	sbi(MMC_CS_PORT,MMC_CS_PIN);
+	//
+	//return 0;	//success
+	return mmc_sector_buffer[0];
 }

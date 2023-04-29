@@ -70,6 +70,7 @@
 // MMC commands (taken from sandisk MMC reference)
 #define MMC_GO_IDLE_STATE			0		///< initialize card to SPI-type access
 #define MMC_SEND_OP_COND			1		///< set card operational mode
+#define MMC_SEND_IF_COND			8		/// for SDHC
 #define MMC_SEND_CSD				9		///< get card's CSD
 #define MMC_SEND_CID				10		///< get card's CID
 #define MMC_SEND_STATUS				13
@@ -142,4 +143,7 @@ u08 mmcWrite(u32 sector);
 /// Issues a generic MMC command as specified by cmd and arg.
 u08 mmcCommand(u08 cmd, u32 arg);
 
+//! Internal command function.
+/// Issues a generic MMC command as specified by cmd and arg and get response into mmc_sector_buffer!
+u08 mmcCommandToBufferResponse(u08 cmd, u32 arg, u08 len);
 #endif

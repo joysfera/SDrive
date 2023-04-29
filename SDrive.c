@@ -1,6 +1,6 @@
 //*****************************************************************************
 // SDrive
-// Bob!k & Raster, C.P.U., 2008
+// Bob!k & Raster, C.P.U., 2008-2012
 //*****************************************************************************
 
 #include <avr/io.h>			// include I/O definitions (port names, pin names, etc)
@@ -15,6 +15,8 @@
 #include "mmc.h"		// include MMC card access functions
 #include "fat.h"
 #include "sboot.h"
+
+#define DEBUG_RAM 		0	//0=off, 1=on
 
 #define    TWOBYTESTOWORD(ptr)           *((u16*)(ptr))
 #define    FOURBYTESTOLONG(ptr)           *((u32*)(ptr))
@@ -459,7 +461,9 @@ void set_display(unsigned char n)
 //uint8_t EEMEM system_atr_name[]={"SDRIVE  ATR"};
 // =eeprom_read_byte(&system_atr_name[idx]);
 //
-uint8_t EEMEM system_info[]="SDrive01 20081012 Bob!k & Raster, C.P.U.";	//SDriveVersion info
+//uint8_t EEMEM system_info[]="SDrive01 20081012 Bob!k & Raster, C.P.U.";	//SDriveVersion info
+uint8_t EEMEM   system_info[]="SDrive02 20120901 Bob!k & Raster, C.P.U.";	//SDriveVersion info
+
 //                                 VVYYYYMMDD
 //                                 VV cislo nove oficialne vydane verze, meni se jen pri vydani noveho oficialniho firmware
 //									  s rozsirenymi/zmenenymi funkcemi zpetne nekompatibilni
@@ -552,6 +556,7 @@ struct SDriveParameters
 
 
 //----- Begin Code ------------------------------------------------------------
+int main(void) __attribute__ ((noreturn));	//size optimization 8122->8098 bytes
 int main(void)
 {
 	unsigned char command[5];
@@ -560,6 +565,7 @@ int main(void)
 	//Parameters
 	struct SDriveParameters sdrparams;
 
+#if DEBUG_RAM
 	{
 		//naplni pamet 0x55kama
 		unsigned char *p;
@@ -567,34 +573,43 @@ int main(void)
 	}
 
 	debug_endofvariables=0xaaaaaaaa;	//posledni promenna
+#endif
 
-
+/*
 	sbi(DDRC,0); // LED_pin out;
 	sbi(DDRC,1); // LED_pin out;
 	sbi(DDRC,2); // LED_pin out;
 	sbi(DDRC,3); // LED_pin out;
 	sbi(DDRC,4); // LED_pin out;
 	sbi(DDRC,5); // LED_pin out;
+*/
+	DDRC |= 0x3f;	//00111111
 
 	cbi(DDRB,0); // KEY_pin input
 	cbi(DDRB,1); // KEY_pin input
 
+/*
 	cbi(DDRD,2); // KEY_pin input
 	cbi(DDRD,3); // KEY_pin input
 	cbi(DDRD,4); // KEY_pin input (karta)
 	cbi(DDRD,5); // KEY_pin input
 	cbi(DDRD,6); // KEY_pin input
 	cbi(DDRD,7); // KEY_pin input
+*/
+	DDRD &= ~0xfc;		//11111100
 
 	sbi(PORTB,0); // pull-up
 	sbi(PORTB,1); // pull-up
 
+/*
 	sbi(PORTD,2); // pull-up
 	sbi(PORTD,3); // pull-up
 	sbi(PORTD,4); // pull-up (karta)
 	sbi(PORTD,5); // pull-up
 	sbi(PORTD,6); // pull-up
 	sbi(PORTD,7); // pull-up
+*/
+	PORTD |= 0xfc;		//11111100
 
 
 SD_CARD_EJECTED:
@@ -939,7 +954,7 @@ format_medium:
 					FileInfo.percomstate=0; //po prvnim formatu pozbyva percom ucinnost
 
 					//XEX formatovat nelze
-					if (FileInfo.vDisk.flags & FLAGS_XEXLOADER)
+					if (FileInfo.vDisk.flags & (FLAGS_XEXLOADER | FLAGS_READONLY))
 					{
 						goto Send_NACK_and_set_FLAGS_WRITEERROR_and_ST_IDLE;
 					}
@@ -994,7 +1009,7 @@ format_medium:
 			case 0x22: // format medium
 				// 	Formats medium density on an Atari 1050. Format medium density cannot be achieved via PERCOM block settings!
 
-				if (! (FileInfo.vDisk.flags & FLAGS_ATRMEDIUMSIZE))
+				if ( (FileInfo.vDisk.flags & (FLAGS_ATRMEDIUMSIZE | FLAGS_READONLY) ) != FLAGS_ATRMEDIUMSIZE )
 				{
 					//FileInfo.percomstate=0;
 					//goto Send_ERR_and_Delay;
@@ -1269,7 +1284,7 @@ percom_prepared:
 							break;
 						}
 
-						if ( get_readonly() )
+						if ( get_readonly() || (FileInfo.vDisk.flags & FLAGS_READONLY) )
 							 goto Send_ERR_and_Delay; //READ ONLY
 
 						proceeded_bytes = faccess_offset(FILE_ACCESS_WRITE,n_data_offset,atari_sector_size);
@@ -1329,6 +1344,7 @@ percom_prepared:
 
 					if(n_sector==0x168)
 					{
+						atari_sector_buffer[0]=2;	//status diskety 20101122
 						//vrati pocet sektoru diskety
 						//byty 1,2
 						goto set_number_of_sectors_to_buffer_1_2;
@@ -1399,7 +1415,7 @@ set_number_of_sectors_to_buffer_1_2:
 
 			case 0x53:	//get status
 
-				FileInfo.percomstate=0;
+				//FileInfo.percomstate=0;	//Hias
 
 				atari_sector_buffer[0] = 0x10;	//0x00 motor off	0x10 motor on
 				if (FileInfo.vDisk.flags & FLAGS_ATRMEDIUMSIZE) atari_sector_buffer[0]|=0x80;		//(FileInfo.vDisk.atr_medium_size);	// medium/single
@@ -1410,7 +1426,7 @@ set_number_of_sectors_to_buffer_1_2:
 				 //vynuluje FLAGS_WRITEERROR bit
 				 FileInfo.vDisk.flags &= (~FLAGS_WRITEERROR);
 				}
-				if (get_readonly()) atari_sector_buffer[0]|=0x08;	//write protected bit
+				if ( get_readonly() || (FileInfo.vDisk.flags & FLAGS_READONLY) ) atari_sector_buffer[0]|=0x08;	//write protected bit
 
 				atari_sector_buffer[1] = 0xff;
 				atari_sector_buffer[2] = 0xe0; 		//(244s) timeout pro nejdelsi operaci
@@ -2157,7 +2173,7 @@ Command_EC_F0_FF_found:
 						else
 						{
 							// XEX
-							FileInfo.vDisk.flags=FLAGS_DRIVEON|FLAGS_XEXLOADER|FLAGS_ATRMEDIUMSIZE;
+							FileInfo.vDisk.flags=FLAGS_DRIVEON|FLAGS_XEXLOADER|FLAGS_ATRMEDIUMSIZE|FLAGS_READONLY;
 						}
 					}
 

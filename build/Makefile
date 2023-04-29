@@ -13,7 +13,7 @@ COMMON = -mmcu=$(MCU)
 
 ## Compile options common for all C compilation units.
 CFLAGS = $(COMMON)
-CFLAGS += -Wall -w -Wtraditional -Wshadow -pedantic -Wa,-gdwarf2     -DF_CPU=14318180UL -Os -funsigned-char -fpack-struct
+CFLAGS += -Wall -w -Wtraditional -Wshadow -pedantic -Wa,-gdwarf2 -DF_CPU=14318180UL -Os -funsigned-char -fpack-struct
 CFLAGS += -MD -MP -MT $(*F).o -MF dep/$(@F).d 
 
 ## Assembly specific flags
@@ -35,7 +35,7 @@ HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 
 ## Include Directories
-INCLUDES = -I"C:\My\BOB\Sdrive\AVRSDrive\..\..\..\..\AVR\WinAVR\avr\include" -I"C:\My\BOB\Sdrive\AVRSDrive\..\..\..\..\AVR\WinAVR\bin" 
+INCLUDES = -I"D:\Sources\AVR\SDrive_SDHC\..\..\..\..\AVR\WinAVR\avr\include" -I"D:\Sources\AVR\SDrive_SDHC\..\..\..\..\AVR\WinAVR\bin" 
 
 ## Objects that must be built in order to link
 OBJECTS = SDrive.o spi.o mmc.o fat.o delay100us.o 

@@ -380,7 +380,7 @@ unsigned short nextCluster(unsigned short cluster)
 	  sector = FirstFATSector + (fatOffset / ((u32)BytesPerSector));
 	  // calculate offset of the our entry within that FAT sector
 	  offset = fatOffset % ((u32)BytesPerSector);
-
+	  	  
 	  // if we don't already have this FAT chunk loaded, go get it
 	  // read sector of FAT table
   	  mmcReadCached( sector );

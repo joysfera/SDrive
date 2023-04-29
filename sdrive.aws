@@ -1,1 +1,1 @@
-<AVRWorkspace><IOSettings><CurrentRegisters/></IOSettings><part name="ATMEGA8"/><Files><File00001 Name="C:\My\BOB\Sdrive\AVRSDrive\SDrive.c" Position="198 47 1025 697" LineCol="1164 0" State="Maximized"/></Files></AVRWorkspace>
+<AVRWorkspace><IOSettings><CurrentRegisters/></IOSettings><part name="ATMEGA8"/><Files><File00000 Name="D:\Sources\AVR\SDrive_SDHC\mmc.c" Position="262 71 1282 715" LineCol="0 0" State="Maximized"/></Files></AVRWorkspace>

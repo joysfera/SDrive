@@ -94,6 +94,7 @@ void spiInit()
 	inb(SPSR);
 }
 
+/*
 void spiSendByte(u08 data)
 {
 	// send a byte over SPI and ignore reply
@@ -101,6 +102,7 @@ void spiSendByte(u08 data)
 
 	outb(SPDR, data);
 }
+*/
 
 u08 spiTransferByte(u08 data)
 {
@@ -121,6 +123,7 @@ u08 spiTransferFF()
 {
 	return spiTransferByte(0xFF);
 }
+
 
 //#define spiTransferTwoFF()	{ spiTransferFF(); spiTransferFF(); }
 
